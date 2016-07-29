@@ -174,18 +174,14 @@ class EventDetail(CacheableHandler):
         # rankings processing for ranking score per match
         full_rankings = event.rankings
         rankings_enhanced = event.rankings_enhanced
-        ranking_disclaimer = ""
+        unofficial_columns = 0
         if rankings_enhanced is not None:
-            # Ranking disclaimer formatted to handle singular vs plural
-            ranking_disclaimer = "<p><b>*</b>%s calculated for your convenience by The Blue Alliance using data provided by <i>FIRST</i> and %s not official.</p>"
+            unofficial_columns = 1
             rp_index = RankingIndexes.CUMULATIVE_RANKING_SCORE[event.year]
+            matches_index = RankingIndexes.MATCHES_PLAYED[event.year]
             ranking_criterion_name = full_rankings[0][rp_index]
             full_rankings[0].append(ranking_criterion_name + "/Match*")
-            if rankings_enhanced["match_offset"] is not None:
-                full_rankings[0].append("# Played Offset*")
-                ranking_disclaimer = ranking_disclaimer % ("These columns are", "are")
-            else:
-                ranking_disclaimer = ranking_disclaimer % ("This column is", "is")
+
             for row in full_rankings[1:]:
                 team = row[1]
                 if rankings_enhanced["ranking_score_per_match"] is not None:
@@ -193,10 +189,8 @@ class EventDetail(CacheableHandler):
                     row.append(rp_per_match)
                 if rankings_enhanced["match_offset"] is not None:
                     match_offset = rankings_enhanced["match_offset"][team]
-                    if match_offset == 0:
-                        row.append("Ahead")
-                    elif match_offset == -1:
-                        row.append("Behind")
+                    if match_offset == -1:
+                        row[matches_index] += " (-1)"
 
 
 
@@ -219,7 +213,7 @@ class EventDetail(CacheableHandler):
             "event_insights_qual": event_insights['qual'] if event_insights else None,
             "event_insights_playoff": event_insights['playoff'] if event_insights else None,
             "event_insights_template": event_insights_template,
-            "ranking_disclaimer": ranking_disclaimer,
+            "unofficial_columns": unofficial_columns,
         })
 
         if event.within_a_day:
