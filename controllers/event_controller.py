@@ -193,7 +193,10 @@ class EventDetail(CacheableHandler):
                     row.append(rp_per_match)
                 if rankings_enhanced["match_offset"] is not None:
                     match_offset = rankings_enhanced["match_offset"][team]
-                    row.append(match_offset)
+                    if match_offset == 0:
+                        row.append("Ahead")
+                    elif match_offset == -1:
+                        row.append("Behind")
 
 
 
